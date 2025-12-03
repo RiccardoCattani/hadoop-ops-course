@@ -12,7 +12,7 @@ The next commands will run from the `scripts/` directory in `ambari3/`
 ## Setup the Ambari repository
 This can take a while (repository is +- 7GB)
 ```
-./setup-ambari-repo.sh  # cd scripts/ first
+cd scripts && ./setup-ambari-repo.sh  
 ```
 
 ## Setup hostnames
@@ -37,7 +37,7 @@ Also when you restart the containers and they have new IP addresses, update the 
 ```
 
 ## Setup Cluster
-You can now login to http://localhost:8080 (login & password are admin) to setup the cluster
+You can now login to http://localhost:9090 (login & password are admin) to setup the cluster
 
 ### Configuration
 * When asked for the baseURL, supply http://bigtop-hostname0.demo.local. Your OS is Redhat 8 based.

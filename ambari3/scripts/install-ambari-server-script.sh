@@ -27,16 +27,19 @@ yum -y install https://dev.mysql.com/get/mysql80-community-release-el8-1.noarch.
 
 yum -y install mysql-server
 
+mkdir -p /var/log/mysql /var/run/mysqld
+chown mysql:mysql /var/log/mysql /var/run/mysqld
+chmod 750 /var/log/mysql
+
 rm -rf /var/lib/mysql/*
-mysqld --initialize
+mysqld --initialize --user=mysql --datadir=/var/lib/mysql --log-error=/var/log/mysql/mysqld.log
 chown -R mysql:mysql /var/lib/mysql
 
-MYSQL_ROOT_PASS=$(cat /var/log/mysql/mysqld.log |grep -i 'password is generated' |rev |cut -d ':' -f1 |rev |sed 's/\ //g')
+MYSQL_ROOT_PASS=$(grep -i 'temporary password' /var/log/mysql/mysqld.log | awk '{print $NF}' | tail -n1)
 
 echo 'bind-address=0.0.0.0' >> /etc/my.cnf.d/mysql-server.cnf
 
-systemctl start mysqld.service
-systemctl enable mysqld.service
+systemctl enable --now mysqld.service
 
 echo "
 ALTER USER 'root'@'localhost' IDENTIFIED WITH caching_sha2_password BY 'ambarirootpass';
@@ -66,7 +69,7 @@ GRANT ALL PRIVILEGES ON rangerkms.* TO 'rangerkms'@'%';
 
 FLUSH PRIVILEGES;" > /root/ambari-server-setup.sql
 
-mysql --connect-expired-password -u root -p''${MYSQL_ROOT_PASS}'' < /root/ambari-server-setup.sql
+mysql --connect-expired-password -uroot -p"${MYSQL_ROOT_PASS}" < /root/ambari-server-setup.sql
 
 mysql --connect-expired-password -uambari -pambari ambari < /var/lib/ambari-server/resources/Ambari-DDL-MySQL-CREATE.sql
 
@@ -91,4 +94,3 @@ ambari-server setup -s \
 
 
 ambari-server start
-
